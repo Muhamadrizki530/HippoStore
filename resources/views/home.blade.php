@@ -1,5 +1,17 @@
 @extends('layouts.app')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/home.css') }}">
+@endpush
+
 @section('content')
-<h1>HOME TEST BLADE</h1>
+
+<div class="wrapper">
+
+    @include('partials.logo')
+
+    @include('partials.buttons')
+
+</div>
+
 @endsection
