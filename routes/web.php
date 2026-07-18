@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return 'HOME TEST';
+    return view('home');
 });
 
 Route::get('/calculator', function () {
