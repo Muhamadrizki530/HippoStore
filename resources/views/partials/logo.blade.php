@@ -1,5 +1,5 @@
 <div class="hero">
-    <img src="{{ asset('assets/logo/HippoStoreText.png') }}" alt="HippoStore" class="logo">
+    <img src="{{ asset('assets/logo/HippoStoretext.png') }}" alt="HippoStore" class="logo">
 
     <div class="tagline">
         <span>Level Up Without the Grind</span>
