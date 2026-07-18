@@ -1,0 +1,457 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+:root{
+    --bg:#050505;
+    --card:#111111;
+    --gold:#C89B3C;
+    --gold-hover:#F5C55A;
+    --white:#FFFFFF;
+    --gray:#A0A0A0;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:var(--bg);
+    background-image:radial-gradient(circle at top,#1b1b1b 0%,transparent 45%);
+    color:var(--white);
+
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+}
+
+a{
+    text-decoration:none;
+    color:inherit;
+}
+
+/* =========================
+   WRAPPER
+========================= */
+
+.wrapper{
+
+    width:min(100%,430px);
+
+    margin:0 auto;
+
+    padding:55px 18px;
+
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero{
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+
+}
+
+.logo{
+
+     width:240px;
+
+    max-width:100%;
+
+    height:auto;
+
+    margin-bottom:20px;
+
+    transition:.3s;
+
+}
+
+.logo:hover{
+
+    transform:scale(1.03);
+
+}
+
+/* =========================
+   TAGLINE
+========================= */
+
+.tagline{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-bottom:20px;
+
+    font-size:13px;
+
+    color:var(--white);
+
+    text-align:center;
+
+}
+
+.tagline span{
+
+    color:var(--white);
+
+}
+
+.tagline strong{
+
+    color:white;
+
+}
+
+/* =========================
+   MENU
+========================= */
+
+.menu-container{
+
+    width:100%;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:16px;
+
+}
+
+.menu-card{
+
+    position:relative;
+
+    width:100%;
+
+    height:60px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:var(--card);
+
+    border:2px solid rgba(200,155,60,.8);
+
+    border-radius:18px;
+
+    transition:.25s;
+
+}
+
+.menu-card:hover{
+
+    transform:translateY(-3px);
+
+    border-color:var(--gold-hover);
+
+    background:#181818;
+
+    box-shadow:0 0 18px rgba(200,155,60,.15);
+
+}
+
+.menu-icon{
+
+    position:absolute;
+
+    left:22px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    color:var(--gold);
+
+    font-size:20px;
+
+}
+
+.menu-card span{
+
+    font-size:15px;
+
+    font-weight:700;
+
+    letter-spacing:1px;
+
+    text-transform:uppercase;
+
+}
+
+.arrow{
+
+    position:absolute;
+
+    right:22px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    color:#777;
+
+    transition:.25s;
+
+}
+
+.menu-card:hover .arrow{
+
+    color:var(--gold);
+
+    transform:translateY(-50%) translateX(6px);
+
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width:576px){
+
+    .wrapper{
+
+        padding:45px 18px;
+
+    }
+
+    .logo{
+
+        width:260px;
+
+    }
+
+    .tagline{
+
+        font-size:12px;
+
+        margin-bottom:18px;
+
+    }
+
+    .menu-card{
+
+        height:58px;
+
+    }
+
+    .menu-card span{
+
+        font-size:14px;
+
+    }
+
+}
+
+/* ==========================================
+   PREMIUM EFFECTS
+========================================== */
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+        radial-gradient(circle at 50% -10%,rgba(200,155,60,.14),transparent 45%),
+        radial-gradient(circle at 50% 110%,rgba(200,155,60,.08),transparent 40%);
+    z-index:-2;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image:
+        linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);
+    background-size:42px 42px;
+    opacity:.18;
+    z-index:-1;
+}
+
+/* ==========================================
+   LOGO
+========================================== */
+
+.logo{
+    filter:
+        drop-shadow(0 0 18px rgba(200,155,60,.12))
+        drop-shadow(0 0 35px rgba(200,155,60,.06));
+}
+
+/* ==========================================
+   TAGLINE
+========================================== */
+
+.tagline{
+    letter-spacing:.5px;
+}
+
+.tagline span{
+    position:relative;
+}
+
+.tagline span::after{
+    content:"";
+    position:absolute;
+    left:0;
+    bottom:-3px;
+    width:100%;
+    height:1px;
+    background:var(--gold);
+    opacity:.35;
+}
+
+/* ==========================================
+   BUTTON
+========================================== */
+
+.menu-card{
+
+    overflow:hidden;
+
+    backdrop-filter:blur(8px);
+
+    background:
+        linear-gradient(180deg,#171717,#101010);
+
+    box-shadow:
+        inset 0 1px rgba(255,255,255,.04),
+        0 8px 24px rgba(0,0,0,.35);
+
+}
+
+.menu-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:-120%;
+
+    top:0;
+
+    width:60%;
+
+    height:100%;
+
+    background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.10),
+        transparent
+    );
+
+    transition:.7s;
+
+}
+
+.menu-card:hover::before{
+
+    left:150%;
+
+}
+
+.menu-card:hover{
+
+    box-shadow:
+        0 0 0 1px rgba(200,155,60,.25),
+        0 12px 28px rgba(200,155,60,.16);
+
+}
+
+.menu-card:active{
+
+    transform:scale(.985);
+
+}
+
+.menu-icon{
+
+    transition:.25s;
+
+}
+
+.menu-card:hover .menu-icon{
+
+    transform:translateY(-50%) scale(1.12);
+
+}
+
+/* ==========================================
+   FADE ANIMATION
+========================================== */
+
+.hero{
+
+    animation:fadeUp .8s ease;
+
+}
+
+.menu-card{
+
+    animation:fadeUp .5s ease both;
+
+}
+
+.menu-card:nth-child(1){
+    animation-delay:.05s;
+}
+
+.menu-card:nth-child(2){
+    animation-delay:.12s;
+}
+
+.menu-card:nth-child(3){
+    animation-delay:.19s;
+}
+
+.menu-card:nth-child(4){
+    animation-delay:.26s;
+}
+
+.menu-card:nth-child(5){
+    animation-delay:.33s;
+}
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(25px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+

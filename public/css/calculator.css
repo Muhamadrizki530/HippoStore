@@ -1,0 +1,254 @@
+/* ==========================================
+   PRICE CALCULATOR PAGE
+   (butuh home.css juga untuk :root, body, .wrapper, dll)
+========================================== */
+
+.calc-back{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:18px;
+    padding:8px 14px;
+    border:1px solid rgba(200,155,60,.4);
+    border-radius:10px;
+    color:var(--gray);
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.3px;
+    transition:.2s;
+}
+
+.calc-back:hover{
+    color:var(--gold);
+    border-color:var(--gold);
+    background:rgba(200,155,60,.06);
+}
+
+.calc-title{
+    text-align:center;
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:1px;
+    margin-bottom:4px;
+}
+
+.calc-subtitle{
+    text-align:center;
+    color:var(--gray);
+    font-size:12px;
+    margin-bottom:22px;
+}
+
+.calc-tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.calc-tab{
+    flex:1;
+    text-align:center;
+    padding:12px 8px;
+    border:2px solid rgba(200,155,60,.35);
+    border-radius:14px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    color:var(--gray);
+    background:var(--card);
+    cursor:pointer;
+    transition:.25s;
+}
+
+.calc-tab.active{
+    color:var(--gold);
+    border-color:var(--gold);
+    background:#181818;
+    box-shadow:0 0 14px rgba(200,155,60,.15);
+}
+
+.calc-card{
+    background:linear-gradient(180deg,#171717,#101010);
+    border:2px solid rgba(200,155,60,.5);
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:
+        inset 0 1px rgba(255,255,255,.04),
+        0 8px 24px rgba(0,0,0,.35);
+}
+
+.calc-group{
+    margin-bottom:16px;
+}
+
+.calc-label{
+    display:block;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--gray);
+    margin-bottom:8px;
+}
+
+.calc-row{
+    display:flex;
+    gap:10px;
+}
+
+.calc-select{
+    flex:1;
+    width:100%;
+    background:#0d0d0d;
+    border:1px solid rgba(200,155,60,.4);
+    border-radius:10px;
+    color:var(--white);
+    padding:10px 12px;
+    font-family:'Poppins',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    transition:.2s;
+}
+
+.calc-select:focus{
+    outline:none;
+    border-color:var(--gold);
+}
+
+.calc-btn{
+    width:100%;
+    padding:14px;
+    margin-top:4px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(180deg,var(--gold-hover),var(--gold));
+    color:#111;
+    font-family:'Poppins',sans-serif;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.calc-btn:hover{
+    filter:brightness(1.08);
+    transform:translateY(-2px);
+}
+
+.calc-btn:active{
+    transform:scale(.98);
+}
+
+.calc-result{
+    display:none;
+    text-align:center;
+    background:var(--card);
+    border:2px solid var(--gold);
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.calc-result.show{
+    display:block;
+    animation:fadeUp .4s ease;
+}
+
+.calc-result .calc-result-label{
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--gray);
+    margin-bottom:6px;
+}
+
+.calc-result .calc-result-price{
+    font-size:26px;
+    font-weight:700;
+    color:var(--gold);
+}
+
+.calc-result .calc-result-stars{
+    font-size:12px;
+    color:var(--gray);
+    margin-top:6px;
+}
+
+.calc-list{
+    background:var(--card);
+    border:2px solid rgba(200,155,60,.6);
+    border-radius:18px;
+    padding:16px 18px;
+    margin-bottom:20px;
+}
+
+.calc-list h3{
+    text-align:center;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:12px;
+    padding-bottom:10px;
+    border-bottom:1px solid rgba(200,155,60,.25);
+}
+
+.calc-list-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.calc-list-row:last-child{
+    border-bottom:none;
+}
+
+.calc-list-row .rank-name{
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+}
+
+.calc-list-row .rank-price{
+    font-size:13px;
+    font-weight:700;
+    color:var(--gold);
+}
+
+@media (max-width:576px){
+    .calc-card,
+    .calc-result,
+    .calc-list{
+        padding:16px;
+    }
+
+    .calc-row{
+        flex-direction:column;
+    }
+
+    .calc-select{
+        width:100%;
+    }
+
+    .calc-tabs{
+        gap:8px;
+    }
+
+    .calc-tab{
+        font-size:11px;
+        padding:10px 6px;
+    }
+
+    .calc-back{
+        font-size:11px;
+        padding:7px 12px;
+    }
+}
