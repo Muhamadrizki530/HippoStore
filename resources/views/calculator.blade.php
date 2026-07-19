@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/calculator.css') }}">
+<link rel="stylesheet" href="{{ asset('css/calculator.css') }}?v={{ filemtime(public_path('css/calculator.css')) }}">
 @endpush
 
 @section('content')
@@ -57,7 +57,7 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('js/calculator.js') }}"></script>
+<script src="{{ asset('js/calculator.js') }}?v={{ filemtime(public_path('js/calculator.js')) }}"></script>
 @endpush
 
 @endsection
