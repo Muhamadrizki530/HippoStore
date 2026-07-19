@@ -3,22 +3,45 @@
 // Ganti angka di sini kalau harga berubah
 // ==========================================
 
-// type: 'dropdown' -> bintang dipilih lewat <select> (1..stars)
-// type: 'input'    -> bintang diketik manual, harus di antara min-max
-//                     (nomor bintangnya ABSOLUT/terusan, bukan mulai dari 1 lagi tiap tier)
+// Epic & Legend memakai sistem divisi (V, IV, III, II, I), masing-masing
+// divisi punya ★0..★5. Naik dari ★0 ke ★5 butuh 5 win. Menang sekali lagi
+// di ★5 akan LANGSUNG naik ke divisi berikutnya di ★1 (bukan ★0).
+// Ini berarti: total win dari divisi X ★0 sampai divisi X ★5 = 5 win,
+// dan win ke-6 mendarat di divisi berikutnya ★1.
+//
+// Rumus posisi lokal (dalam satu tier Epic atau Legend):
+//   localPosition(divisionIndex, star) = divisionIndex * STARS_PER_DIVISION + star
+//
+// Rumus ini otomatis benar untuk kasus promosi karena:
+//   divisi X ★5      -> posisi = X*5 + 5
+//   divisi (X+1) ★0  -> posisi = (X+1)*5 + 0 = X*5 + 5   (SAMA, dan memang seharusnya sama:
+//                        keduanya cuma butuh 1 win lagi untuk sampai ke divisi (X+1) ★1)
+//
+// type: 'division' -> bintang dipilih lewat <select> berisi kombinasi divisi + bintang
+// type: 'input'     -> bintang diketik manual, harus di antara min-max
+//                      (nomor bintangnya ABSOLUT/terusan, bukan mulai dari 1 lagi tiap tier)
+
+const DIVISIONS = ['V', 'IV', 'III', 'II', 'I'];
+const STARS_PER_DIVISION = 5; // jumlah win untuk dari ★0 ke ★5 dalam satu divisi
+
+// Total "win slot" yang dimiliki satu tier divisi (Epic atau Legend):
+// 5 divisi x 5 win per divisi = 25
+const DIVISION_TIER_TOTAL_STARS = DIVISIONS.length * STARS_PER_DIVISION;
+
 const tiers = [
-    { name: 'Epic',     type: 'dropdown', stars: 5,                priceGendong: 5000,  priceAkun: 3000 },
-    { name: 'Legend',   type: 'dropdown', stars: 5,                priceGendong: 6000,  priceAkun: 5000 },
+    { name: 'Epic',     type: 'division', totalStars: DIVISION_TIER_TOTAL_STARS, priceGendong: 5000,  priceAkun: 3000 },
+    { name: 'Legend',   type: 'division', totalStars: DIVISION_TIER_TOTAL_STARS, priceGendong: 6000,  priceAkun: 5000 },
     { name: 'Mythic',   type: 'input',    min: 1,   max: 24,       priceGendong: 10000, priceAkun: 8000 },
     { name: 'Honor',    type: 'input',    min: 25,  max: 49,       priceGendong: 12000, priceAkun: 10000 },
     { name: 'Glory',    type: 'input',    min: 50,  max: 99,       priceGendong: 15000, priceAkun: 13000 },
     { name: 'Immortal', type: 'input',    min: 100, max: Infinity, priceGendong: 20000, priceAkun: 18000 },
 ];
 
-// Total bintang tier dropdown (Epic + Legend), dipakai buat offset posisi global
+// Total win dari Epic V ★0 sampai Legend I ★5, dipakai buat offset posisi global
+// tier-tier setelah Legend (Mythic dst).
 const DROPDOWN_TOTAL_STARS = tiers
-    .filter(t => t.type === 'dropdown')
-    .reduce((sum, t) => sum + t.stars, 0);
+    .filter(t => t.type === 'division')
+    .reduce((sum, t) => sum + t.totalStars, 0);
 
 let mode = 'gendong'; // 'gendong' atau 'akun'
 
@@ -56,7 +79,25 @@ function rangeLabel(t) {
     return t.max === Infinity ? `★${t.min}+ (unlimited)` : `★${t.min}-${t.max}`;
 }
 
-// Ganti elemen bintang jadi <select> (tier dropdown) atau <input type="number"> (tier input)
+// Bangun opsi <select> untuk tier bertipe 'division': setiap divisi (V..I)
+// menampilkan ★0..★5. Value tiap opsi adalah "divisionIndex-star" (mis. "1-0")
+// supaya setiap opsi punya value HTML yang unik, meskipun dua opsi berbeda
+// (mis. V★5 dan IV★0) bisa menghasilkan progression yang sama.
+// readTierStar() yang mengubah value ini jadi posisi lokal untuk globalPosition().
+function buildDivisionOptions(tier) {
+    let html = '';
+    DIVISIONS.forEach((divisionName, divisionIndex) => {
+        html += `<optgroup label="${tier.name} ${divisionName}">`;
+        for (let star = 0; star <= STARS_PER_DIVISION; star++) {
+            const value = `${divisionIndex}-${star}`;
+            html += `<option value="${value}">${divisionName} ★${star}</option>`;
+        }
+        html += '</optgroup>';
+    });
+    return html;
+}
+
+// Ganti elemen bintang jadi <select> (tier divisi) atau <input type="number"> (tier input)
 // tergantung tier yang dipilih. Id-nya tetap sama biar gampang dibaca di tempat lain.
 function updateStarInput(tierId, starId) {
     const tierIndex = parseInt(document.getElementById(tierId).value, 10);
@@ -78,11 +119,7 @@ function updateStarInput(tierId, starId) {
         newEl = document.createElement('select');
         newEl.id = starId;
         newEl.className = oldEl.className;
-        let opts = '';
-        for (let i = 1; i <= tier.stars; i++) {
-            opts += `<option value="${i}">Bintang ${i}</option>`;
-        }
-        newEl.innerHTML = opts;
+        newEl.innerHTML = buildDivisionOptions(tier);
     }
 
     oldEl.parentNode.replaceChild(newEl, oldEl);
@@ -100,6 +137,7 @@ function updateStarInput(tierId, starId) {
 
 // Cek apakah nilai yang diketik user masih sesuai range tier-nya sendiri.
 // Kalau kelewatan, ganti warning jadi merah dan kasih pesan salah.
+// (Tier bertipe 'division' selalu valid karena dibatasi oleh <select>.)
 function validateStarInput(tierId, starId) {
     const tierIndex = parseInt(document.getElementById(tierId).value, 10);
     const tier = tiers[tierIndex];
@@ -119,29 +157,32 @@ function validateStarInput(tierId, starId) {
     return valid;
 }
 
-// Ubah (tierIndex, star) jadi posisi absolut biar gampang dibandingin/diloop
+// Ubah (tierIndex, star) jadi posisi absolut (total win dari Epic V ★0) biar
+// gampang dibandingin/diloop. Untuk tier 'division', `star` adalah posisi lokal
+// yang sudah dihitung oleh buildDivisionOptions (divisionIndex*5 + star).
 function globalPosition(tierIndex, star) {
     const tier = tiers[tierIndex];
     if (tier.type === 'input') {
         return DROPDOWN_TOTAL_STARS + star;
     }
-    let pos = 0;
+
+    let offset = 0;
     for (let i = 0; i < tierIndex; i++) {
-        if (tiers[i].type === 'dropdown') pos += tiers[i].stars;
+        if (tiers[i].type === 'division') offset += tiers[i].totalStars;
     }
-    return pos + star;
+    return offset + star;
 }
 
-// Ambil harga (gendong/akun) untuk 1 bintang di posisi global tertentu
+// Ambil harga (gendong/akun) untuk 1 win di posisi global tertentu
 function priceForPosition(pos) {
     if (pos <= DROPDOWN_TOTAL_STARS) {
         let cursor = 0;
         for (const t of tiers) {
-            if (t.type !== 'dropdown') continue;
-            if (pos <= cursor + t.stars) {
+            if (t.type !== 'division') continue;
+            if (pos <= cursor + t.totalStars) {
                 return mode === 'gendong' ? t.priceGendong : t.priceAkun;
             }
-            cursor += t.stars;
+            cursor += t.totalStars;
         }
     } else {
         const star = pos - DROPDOWN_TOTAL_STARS;
@@ -155,10 +196,29 @@ function priceForPosition(pos) {
     return 0;
 }
 
+// Harga tier tertentu secara langsung (dipakai untuk win pertama, lihat catatan
+// di hitungHarga() soal kenapa win pertama tidak bisa memakai priceForPosition()).
+function priceForTier(tierIndex) {
+    const tier = tiers[tierIndex];
+    return mode === 'gendong' ? tier.priceGendong : tier.priceAkun;
+}
+
+// Untuk tier 'division', value select-nya berformat "divisionIndex-star" (mis. "1-0"),
+// jadi perlu di-parse dulu jadi posisi lokal (divisionIndex*5+star) sebelum dipakai
+// oleh globalPosition(). Untuk tier 'input', value-nya sudah berupa angka bintang biasa.
 function readTierStar(tierId, starId) {
     const tierIndex = parseInt(document.getElementById(tierId).value, 10);
-    const starRaw = document.getElementById(starId).value;
-    const star = parseInt(starRaw, 10) || 0;
+    const tier = tiers[tierIndex];
+    const rawValue = document.getElementById(starId).value;
+
+    let star;
+    if (tier.type === 'division') {
+        const [divisionIndex, starInDivision] = rawValue.split('-').map(Number);
+        star = divisionIndex * STARS_PER_DIVISION + starInDivision;
+    } else {
+        star = parseInt(rawValue, 10) || 0;
+    }
+
     return { tierIndex, star };
 }
 
@@ -193,8 +253,19 @@ function hitungHarga() {
     let total = 0;
     const totalStars = toPos - fromPos;
 
+    // Setiap win dihargai berdasarkan rank SEBELUM win itu terjadi (source),
+    // bukan rank tujuannya. Untuk win pertama, source-nya persis rank yang
+    // dipilih user di dropdown "from" — jadi harganya diambil langsung dari
+    // tier yang dipilih itu. Ini penting karena Epic I★5 dan Legend V★0
+    // punya posisi global yang sama (progress-nya memang identik), tapi win
+    // pertama dari keduanya harus dihargai berbeda (Epic vs Legend).
+    // Untuk win-win berikutnya, source position-nya sudah pasti tidak ambigu,
+    // jadi cukup pakai priceForPosition() seperti biasa.
     for (let pos = fromPos + 1; pos <= toPos; pos++) {
-        total += priceForPosition(pos);
+        const sourcePos = pos - 1;
+        total += (sourcePos === fromPos)
+            ? priceForTier(from.tierIndex)
+            : priceForPosition(sourcePos);
     }
 
     priceEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
