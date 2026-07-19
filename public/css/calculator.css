@@ -117,6 +117,25 @@
     border-color:var(--gold);
 }
 
+/* input[type=number] dipakai pas tier Mythic+ dipilih (calculator.js
+   ganti <select> jadi <input type="number"> dengan class yang sama).
+   Ilangin spinner bawaan browser biar tampilannya konsisten sama dropdown. */
+input[type="number"].calc-select{
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+input[type="number"].calc-select::-webkit-outer-spin-button,
+input[type="number"].calc-select::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"].calc-select::placeholder{
+    color:var(--gray);
+    font-weight:500;
+}
+
 .calc-btn{
     width:100%;
     padding:14px;
@@ -215,6 +234,17 @@
     font-weight:700;
     letter-spacing:.5px;
     text-transform:uppercase;
+}
+
+/* Label range bintang (mis. "★1-24") di sebelah nama rank Mythic/Honor/Glory/Immortal */
+.calc-list-row .rank-name small{
+    display:block;
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:.3px;
+    text-transform:none;
+    color:var(--gray);
+    margin-top:2px;
 }
 
 .calc-list-row .rank-price{
