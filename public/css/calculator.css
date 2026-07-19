@@ -136,6 +136,20 @@ input[type="number"].calc-select::placeholder{
     font-weight:500;
 }
 
+/* Teks kecil di bawah input bintang: nunjukkin range valid tier itu,
+   atau jadi merah kalau user ketik angka di luar range-nya */
+.calc-hint{
+    font-size:11px;
+    color:var(--gray);
+    margin-top:6px;
+    min-height:14px;
+}
+
+.calc-hint.calc-hint-error{
+    color:#e05555;
+    font-weight:600;
+}
+
 .calc-btn{
     width:100%;
     padding:14px;

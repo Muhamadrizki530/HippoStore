@@ -3,28 +3,22 @@
 // Ganti angka di sini kalau harga berubah
 // ==========================================
 
-// Epic & Legend: dropdown, bintang terbatas (1-5)
-const dropdownTiers = [
-    { name: 'Epic',   stars: 5, priceGendong: 5000, priceAkun: 3000 },
-    { name: 'Legend', stars: 5, priceGendong: 6000, priceAkun: 5000 },
+// type: 'dropdown' -> bintang dipilih lewat <select> (1..stars)
+// type: 'input'    -> bintang diketik manual, harus di antara min-max
+//                     (nomor bintangnya ABSOLUT/terusan, bukan mulai dari 1 lagi tiap tier)
+const tiers = [
+    { name: 'Epic',     type: 'dropdown', stars: 5,                priceGendong: 5000,  priceAkun: 3000 },
+    { name: 'Legend',   type: 'dropdown', stars: 5,                priceGendong: 6000,  priceAkun: 5000 },
+    { name: 'Mythic',   type: 'input',    min: 1,   max: 24,       priceGendong: 10000, priceAkun: 8000 },
+    { name: 'Honor',    type: 'input',    min: 25,  max: 49,       priceGendong: 12000, priceAkun: 10000 },
+    { name: 'Glory',    type: 'input',    min: 50,  max: 99,       priceGendong: 15000, priceAkun: 13000 },
+    { name: 'Immortal', type: 'input',    min: 100, max: Infinity, priceGendong: 20000, priceAkun: 18000 },
 ];
 
-// Mythic ke atas: satu hitungan bintang yang terus jalan (poin Mythic),
-// dibagi per bracket. min/max dalam nomor bintang GLOBAL Mythic (bukan per-tier).
-// Immortal max = Infinity artinya unlimited.
-const mythicBrackets = [
-    { name: 'Mythic',   min: 1,   max: 24,       priceGendong: 10000, priceAkun: 8000 },
-    { name: 'Honor',    min: 25,  max: 49,       priceGendong: 12000, priceAkun: 10000 },
-    { name: 'Glory',    min: 50,  max: 99,       priceGendong: 15000, priceAkun: 13000 },
-    { name: 'Immortal', min: 100, max: Infinity, priceGendong: 20000, priceAkun: 18000 },
-];
-
-// Total bintang dropdown (Epic + Legend) dipakai buat offset posisi global
-const DROPDOWN_TOTAL_STARS = dropdownTiers.reduce((sum, t) => sum + t.stars, 0);
-
-// Tier yang muncul di pilihan "Dari" / "Ke"
-// index 0..dropdownTiers.length-1 = dropdownTiers, index terakhir = 'Mythic' (mode input)
-const MYTHIC_TIER_INDEX = dropdownTiers.length;
+// Total bintang tier dropdown (Epic + Legend), dipakai buat offset posisi global
+const DROPDOWN_TOTAL_STARS = tiers
+    .filter(t => t.type === 'dropdown')
+    .reduce((sum, t) => sum + t.stars, 0);
 
 let mode = 'gendong'; // 'gendong' atau 'akun'
 
@@ -32,9 +26,7 @@ function populateSelects() {
     const fromTier = document.getElementById('fromTier');
     const toTier = document.getElementById('toTier');
 
-    let options = dropdownTiers.map((t, i) => `<option value="${i}">${t.name}</option>`).join('');
-    options += `<option value="${MYTHIC_TIER_INDEX}">Mythic+</option>`;
-
+    const options = tiers.map((t, i) => `<option value="${i}">${t.name}</option>`).join('');
     fromTier.innerHTML = options;
     toTier.innerHTML = options;
 
@@ -45,47 +37,97 @@ function populateSelects() {
     toTier.addEventListener('change', () => updateStarInput('toTier', 'toStar'));
 }
 
-// Ganti elemen bintang jadi <select> (Epic/Legend) atau <input type="number"> (Mythic+)
-// tergantung tier yang dipilih, tapi id-nya tetap sama biar gampang dibaca di hitungHarga()
+// Ambil (atau buat kalau belum ada) elemen warning kecil di bawah calc-row punya starId
+function getWarningEl(starId) {
+    const existing = document.getElementById(starId + 'Warning');
+    if (existing) return existing;
+
+    const starEl = document.getElementById(starId);
+    const group = starEl.closest('.calc-group');
+
+    const warn = document.createElement('div');
+    warn.id = starId + 'Warning';
+    warn.className = 'calc-hint';
+    group.appendChild(warn);
+    return warn;
+}
+
+function rangeLabel(t) {
+    return t.max === Infinity ? `★${t.min}+ (unlimited)` : `★${t.min}-${t.max}`;
+}
+
+// Ganti elemen bintang jadi <select> (tier dropdown) atau <input type="number"> (tier input)
+// tergantung tier yang dipilih. Id-nya tetap sama biar gampang dibaca di tempat lain.
 function updateStarInput(tierId, starId) {
     const tierIndex = parseInt(document.getElementById(tierId).value, 10);
+    const tier = tiers[tierIndex];
     const oldEl = document.getElementById(starId);
 
     let newEl;
-    if (tierIndex === MYTHIC_TIER_INDEX) {
+    if (tier.type === 'input') {
         newEl = document.createElement('input');
         newEl.type = 'number';
         newEl.id = starId;
-        newEl.min = '1';
+        newEl.min = String(tier.min);
+        if (tier.max !== Infinity) newEl.max = String(tier.max);
         newEl.step = '1';
-        newEl.value = '1';
-        newEl.placeholder = 'Bintang ke-';
+        newEl.value = String(tier.min);
+        newEl.placeholder = `Bintang ${tier.name}`;
         newEl.className = oldEl.className;
     } else {
         newEl = document.createElement('select');
         newEl.id = starId;
         newEl.className = oldEl.className;
-        const starCount = dropdownTiers[tierIndex].stars;
         let opts = '';
-        for (let i = 1; i <= starCount; i++) {
+        for (let i = 1; i <= tier.stars; i++) {
             opts += `<option value="${i}">Bintang ${i}</option>`;
         }
         newEl.innerHTML = opts;
     }
 
     oldEl.parentNode.replaceChild(newEl, oldEl);
+
+    const warn = getWarningEl(starId);
+    if (tier.type === 'input') {
+        warn.textContent = `${tier.name} dari ${rangeLabel(tier)}`;
+        warn.classList.remove('calc-hint-error');
+        newEl.addEventListener('input', () => validateStarInput(tierId, starId));
+    } else {
+        warn.textContent = '';
+        warn.classList.remove('calc-hint-error');
+    }
 }
 
-// Ubah (tierIndex, star) jadi posisi absolut biar gampang dibandingin/diloop.
-// Untuk Mythic+, "star" adalah nomor bintang Mythic itu sendiri (1, 2, 3, ... unlimited),
-// jadi posisi globalnya = total bintang dropdown + nomor bintang mythic tsb.
+// Cek apakah nilai yang diketik user masih sesuai range tier-nya sendiri.
+// Kalau kelewatan, ganti warning jadi merah dan kasih pesan salah.
+function validateStarInput(tierId, starId) {
+    const tierIndex = parseInt(document.getElementById(tierId).value, 10);
+    const tier = tiers[tierIndex];
+    if (tier.type !== 'input') return true;
+
+    const star = parseInt(document.getElementById(starId).value, 10);
+    const warn = getWarningEl(starId);
+    const valid = !isNaN(star) && star >= tier.min && star <= tier.max;
+
+    if (valid) {
+        warn.textContent = `${tier.name} dari ${rangeLabel(tier)}`;
+        warn.classList.remove('calc-hint-error');
+    } else {
+        warn.textContent = `${tier.name} cuma dari ${rangeLabel(tier)}, ketik nomor bintang yang sesuai`;
+        warn.classList.add('calc-hint-error');
+    }
+    return valid;
+}
+
+// Ubah (tierIndex, star) jadi posisi absolut biar gampang dibandingin/diloop
 function globalPosition(tierIndex, star) {
-    if (tierIndex === MYTHIC_TIER_INDEX) {
+    const tier = tiers[tierIndex];
+    if (tier.type === 'input') {
         return DROPDOWN_TOTAL_STARS + star;
     }
     let pos = 0;
     for (let i = 0; i < tierIndex; i++) {
-        pos += dropdownTiers[i].stars;
+        if (tiers[i].type === 'dropdown') pos += tiers[i].stars;
     }
     return pos + star;
 }
@@ -93,20 +135,20 @@ function globalPosition(tierIndex, star) {
 // Ambil harga (gendong/akun) untuk 1 bintang di posisi global tertentu
 function priceForPosition(pos) {
     if (pos <= DROPDOWN_TOTAL_STARS) {
-        // Masih di area Epic/Legend, cari tier & bintang ke berapa posisi ini
         let cursor = 0;
-        for (const t of dropdownTiers) {
+        for (const t of tiers) {
+            if (t.type !== 'dropdown') continue;
             if (pos <= cursor + t.stars) {
                 return mode === 'gendong' ? t.priceGendong : t.priceAkun;
             }
             cursor += t.stars;
         }
     } else {
-        // Sudah masuk area Mythic+, cari bracket-nya
-        const mythicStar = pos - DROPDOWN_TOTAL_STARS;
-        for (const b of mythicBrackets) {
-            if (mythicStar >= b.min && mythicStar <= b.max) {
-                return mode === 'gendong' ? b.priceGendong : b.priceAkun;
+        const star = pos - DROPDOWN_TOTAL_STARS;
+        for (const t of tiers) {
+            if (t.type !== 'input') continue;
+            if (star >= t.min && star <= t.max) {
+                return mode === 'gendong' ? t.priceGendong : t.priceAkun;
             }
         }
     }
@@ -121,22 +163,25 @@ function readTierStar(tierId, starId) {
 }
 
 function hitungHarga() {
-    const from = readTierStar('fromTier', 'fromStar');
-    const to = readTierStar('toTier', 'toStar');
-
-    const fromPos = globalPosition(from.tierIndex, from.star);
-    const toPos = globalPosition(to.tierIndex, to.star);
+    const fromValid = validateStarInput('fromTier', 'fromStar');
+    const toValid = validateStarInput('toTier', 'toStar');
 
     const resultBox = document.getElementById('calcResult');
     const priceEl = document.getElementById('resultPrice');
     const starsEl = document.getElementById('resultStars');
 
-    if (from.tierIndex === MYTHIC_TIER_INDEX && from.star < 1) {
-        priceEl.textContent = 'Nomor bintang Mythic minimal 1';
-        starsEl.textContent = '';
+    if (!fromValid || !toValid) {
+        priceEl.textContent = 'Cek lagi nomor bintangnya';
+        starsEl.textContent = 'Ada input yang di luar range tier-nya';
         resultBox.classList.add('show');
         return;
     }
+
+    const from = readTierStar('fromTier', 'fromStar');
+    const to = readTierStar('toTier', 'toStar');
+
+    const fromPos = globalPosition(from.tierIndex, from.star);
+    const toPos = globalPosition(to.tierIndex, to.star);
 
     if (toPos <= fromPos) {
         priceEl.textContent = 'Rank tujuan harus lebih tinggi';
@@ -163,19 +208,11 @@ function renderList() {
 
     let html = `<h3>${title}</h3>`;
 
-    dropdownTiers.forEach((t) => {
+    tiers.forEach((t) => {
         const price = mode === 'gendong' ? t.priceGendong : t.priceAkun;
+        const label = t.type === 'input' ? ` <small>${rangeLabel(t)}</small>` : '';
         html += `<div class="calc-list-row">
-            <span class="rank-name">${t.name}</span>
-            <span class="rank-price">Rp ${price.toLocaleString('id-ID')} / ★</span>
-        </div>`;
-    });
-
-    mythicBrackets.forEach((b) => {
-        const price = mode === 'gendong' ? b.priceGendong : b.priceAkun;
-        const rangeLabel = b.max === Infinity ? `★${b.min}+ (unlimited)` : `★${b.min}-${b.max}`;
-        html += `<div class="calc-list-row">
-            <span class="rank-name">${b.name} <small>${rangeLabel}</small></span>
+            <span class="rank-name">${t.name}${label}</span>
             <span class="rank-price">Rp ${price.toLocaleString('id-ID')} / ★</span>
         </div>`;
     });
